@@ -26,6 +26,7 @@ class StorePostRequest extends FormRequest
             "user_id"=>"nullable",
             "title"=>"required",
             "body"=>"required",
+            "image"=> "nullable|file|mimes:png,jpg",
             "created_at"=>Carbon::now(),
             "updated_at"=>Carbon::now(),
         ];

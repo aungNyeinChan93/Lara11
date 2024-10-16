@@ -24,8 +24,15 @@
                             href="{{ route('user.posts', $post->user->id) }}">{{ $post->user->name }}</a></h5>
                 </div>
                 <div class="grid grid-cols-6  ">
-                    <small class="py-2 mx-3 text-red-500">Created {{ $post->created_at->diffForhumans() }}</small>
-                    <small class="py-2 mx-3 text-green-500 "> {{ $post->user->name }}</small>
+                    @if ($post->image)
+                        <div class="py-2 mx-3">
+                            <img src="{{ asset('/storage/' . $post->image) }}" alt="img">
+                        </div>
+                    @endif
+                    <div>
+                        <small class="py-2 mx-3 text-red-500">Created {{ $post->created_at->diffForhumans() }}</small>
+                        <small class="py-2 text-xs mx-3 text-green-500 "> {{ $post->user->name }}</small>
+                    </div>
                 </div>
                 <div class="card-body flex justify-between">
                     <p>{{ Str::limit($post->body, 50, '...') }}</p>

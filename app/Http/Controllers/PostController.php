@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\StorePostRequest;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\UpdatePostRequest;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -15,13 +16,13 @@ class PostController extends Controller implements HasMiddleware
 {
 
     // controller middleware
-    public static function middleware(){
+    public static function middleware()
+    {
         return [
 
             new Middleware('auth', except: ['index']),
         ];
     }
-
 
     /**
      * Display a listing of the resource.
@@ -45,15 +46,23 @@ class PostController extends Controller implements HasMiddleware
     /**
      * Store a newly created resource in storage.
      */
+    // create post
     public function store(StorePostRequest $request)
     {
+        // dd($request);
+        $path = null;
+        if ($request->hasFile("image")) {
+            $path = Storage::disk("public")->put("postImage", $request->image);
+        }
+        // dd($path);
         $post = Post::create([
             "user_id" => Auth::user()->id,
             "title" => $request->title,
             "body" => $request->body,
+            "image" => $path,
         ]);
 
-        return to_route("posts.index")->with("post-create","Post created success!");
+        return to_route("posts.index")->with("post-create", "Post created success!");
     }
 
     /**
@@ -71,23 +80,39 @@ class PostController extends Controller implements HasMiddleware
     // post edit
     public function edit(Post $post)
     {
-        Gate::authorize("update",$post);
+        Gate::authorize("update", $post);
         return view("posts.edit", compact("post"));
     }
 
     /**
      * Update the specified resource in storage.
      */
+    // update post
     public function update(UpdatePostRequest $request, Post $post)
     {
         try {
 
-            $post->update([
-                "user_id" => Auth::user()->id,
-                "title" => $request->title,
-                "body" => $request->body,
-            ]);
-            return to_route("posts.index")->with("post-update","Posts updated success!");
+            if ($request->hasFile("image")) {
+                if ($post->image) {
+                    Storage::disk("public")->delete($post->image);
+                }
+                $path = Storage::disk("public")->put("postImage", $request->image);
+                $post->update([
+                    "user_id" => Auth::user()->id,
+                    "title" => $request->title,
+                    "body" => $request->body,
+                    "image" => $path,
+                ]);
+            } else {
+                $post->update([
+                    "user_id" => Auth::user()->id,
+                    "title" => $request->title,
+                    "body" => $request->body,
+                    "image" => $post->image,
+                ]);
+            }
+
+            return to_route("posts.index")->with("post-update", "Posts updated success!");
         } catch (\Throwable $th) {
             return $th->getMessage();
         }
@@ -101,22 +126,30 @@ class PostController extends Controller implements HasMiddleware
     public function destroy(Post $post)
     {
         // Gate::authorize("forceDelete",$post);
-        Gate::authorize("delete",$post);
+        Gate::authorize("delete", $post);
+
+
+        if ($post->image) {
+            Storage::disk("public")->delete($post->image);
+        }
+
         $post->delete();
-        return to_route("posts.index")->with("post-delete","Post delete success!");
+        return to_route("posts.index")->with("post-delete", "Post delete success!");
     }
 
-    public function myPosts(){
-        $user = User::where("id",Auth::user()->id)->first();
+    // view all my posts
+    public function myPosts()
+    {
+        $user = User::where("id", Auth::user()->id)->first();
         $posts = $user->posts()->paginate(5);
-        return view("posts.myPosts",compact("posts"));
+        return view("posts.myPosts", compact("posts"));
     }
 
     // user posts
-    public function userPosts(User $user){
-        // dd($user->posts);
-        $posts =$user->posts()->latest()->paginate(5);
-        return view("posts.userPosts",compact("posts","user"));
+    public function userPosts(User $user)
+    {
+        $posts = $user->posts()->latest()->paginate(5);
+        return view("posts.userPosts", compact("posts", "user"));
     }
 
 }
