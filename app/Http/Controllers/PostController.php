@@ -3,13 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Routing\Controllers\HasMiddleware;
 
-class PostController extends Controller
+class PostController extends Controller implements HasMiddleware
 {
+
+    // controller middleware
+    public static function middleware(){
+        return [
+
+            new Middleware('auth', except: ['index']),
+        ];
+    }
+
+
     /**
      * Display a listing of the resource.
      */
@@ -87,8 +100,23 @@ class PostController extends Controller
     // post delete
     public function destroy(Post $post)
     {
+        // Gate::authorize("forceDelete",$post);
         Gate::authorize("delete",$post);
         $post->delete();
         return to_route("posts.index")->with("post-delete","Post delete success!");
     }
+
+    public function myPosts(){
+        $user = User::where("id",Auth::user()->id)->first();
+        $posts = $user->posts()->paginate(5);
+        return view("posts.myPosts",compact("posts"));
+    }
+
+    // user posts
+    public function userPosts(User $user){
+        // dd($user->posts);
+        $posts =$user->posts()->latest()->paginate(5);
+        return view("posts.userPosts",compact("posts","user"));
+    }
+
 }

@@ -19,16 +19,18 @@
                 <div class="div flex justify-start">
                     @guest
                         <li class="nav-link  ms-4 "><a href="/">Home</a></li>
-
                     @endguest
                     @auth
-
                         <li class="nav-link  ms-4 "><a href="{{ route('Home#dashboard') }}">Dashboard</a></li>
                         <li class="nav-link  ms-4 "><a href="{{ route('Home#dashboard') }}">About</a></li>
                         <li class="nav-link  ms-4 "><a href="{{ route('Home#dashboard') }}">Contact</a></li>
                     @endauth
                     <li class="nav-link  ms-4 "><a href="{{ route('posts.index') }}">Posts</a></li>
 
+                    @auth
+                        <li class="nav-link  ms-4 "><a href="{{ route('posts.myPosts') }}">My Posts</a></li>
+
+                    @endauth
                 </div>
                 <div class=" flex justify-end">
                     @auth

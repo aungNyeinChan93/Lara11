@@ -31,22 +31,31 @@ Route::post("testForm", function (Request $request) {
 })->name("test");
 
 
-Route::group(["middleware" => "auth"], function () {
-    Route::post("logout", [AuthController::class, "logout"])->name("Auth#logout");
-    // Dashboard
-    Route::get("home", [HomeController::class, "dashboard"])->name("Home#dashboard");
-
-});
-
 Route::middleware("guest")->group(function () {
     // auth
     Route::get("registerPage", [AuthController::class, "registerPage"])->name("Auth#registerPage");
     Route::post("register", [AuthController::class, "register"])->name("Auth#register");
     Route::get("login", [AuthController::class, "loginPage"])->name("Auth#loginPage");
     Route::post("login", [AuthController::class, "login"])->name("Auth#login");
-
 });
 
+Route::group(["middleware" => "auth"], function () {
 
-// use resource route
-Route::resource("posts",PostController::class);
+    Route::post("logout", [AuthController::class, "logout"])->name("Auth#logout");
+
+    // Dashboard
+    Route::get("home", [HomeController::class, "dashboard"])->name("Home#dashboard");
+
+    // myPost
+    Route::get("myposts", [PostController::class, "myPosts"])->name("posts.myPosts");
+
+    // user posts
+    Route::get("{user}/posts", [PostController::class, "userPosts"])->name("user.posts");
+});
+
+   // use resource route
+   Route::resource("posts", PostController::class);
+
+
+
+
