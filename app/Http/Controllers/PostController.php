@@ -2,13 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\PostUpdatedMail;
+use App\Mail\welcomeMail;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Requests\StorePostRequest;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\UpdatePostRequest;
+use App\Mail\PostCreatedMail;
+use App\Mail\PostDeletedMail;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Controllers\HasMiddleware;
 
@@ -20,7 +25,7 @@ class PostController extends Controller implements HasMiddleware
     {
         return [
 
-            new Middleware('auth', except: ['index']),
+            new Middleware(['auth','verified'], except: ['index']),
         ];
     }
 
@@ -61,6 +66,8 @@ class PostController extends Controller implements HasMiddleware
             "body" => $request->body,
             "image" => $path,
         ]);
+
+        Mail::to(Auth::user()->email)->send(new PostCreatedMail($post,$post->user));
 
         return to_route("posts.index")->with("post-create", "Post created success!");
     }
@@ -111,7 +118,7 @@ class PostController extends Controller implements HasMiddleware
                     "image" => $post->image,
                 ]);
             }
-
+            Mail::to(Auth::user()->email)->send(new PostUpdatedMail($post,$post->user));
             return to_route("posts.index")->with("post-update", "Posts updated success!");
         } catch (\Throwable $th) {
             return $th->getMessage();
@@ -134,6 +141,8 @@ class PostController extends Controller implements HasMiddleware
         }
 
         $post->delete();
+
+        Mail::to(Auth::user()->email)->send(new PostDeletedMail($post,$post->user));
         return to_route("posts.index")->with("post-delete", "Post delete success!");
     }
 

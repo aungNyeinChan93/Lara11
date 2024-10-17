@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 class AuthController extends Controller
 {
@@ -26,6 +28,8 @@ class AuthController extends Controller
         $user = User::create($validated);
 
         Auth::login($user);
+
+        event(new Registered($user));
 
         return to_route("Home#dashboard");
 
@@ -63,5 +67,23 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    // Email Verification Notice
+    public function verificationNotice() {
+        $user = Auth::user();
+        return view('auth.verify-email',compact("user"));
+    }
+
+    // Email Verification Handler
+    public function verificationHandeler(EmailVerificationRequest $request) {
+        $request->fulfill();
+        return redirect()->route('Home#dashboard');
+    }
+
+    // Resending the Verification Email
+    public function verificationEmail(Request $request) {
+        $request->user()->sendEmailVerificationNotification();
+        return back()->with('message', 'Verification link sent!');
     }
 }

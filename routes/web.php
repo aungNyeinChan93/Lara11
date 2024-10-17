@@ -44,14 +44,19 @@ Route::group(["middleware" => "auth"], function () {
     Route::post("logout", [AuthController::class, "logout"])->name("Auth#logout");
 
     // Dashboard
-    Route::get("home", [HomeController::class, "dashboard"])->name("Home#dashboard");
+    Route::get("home", [HomeController::class, "dashboard"])->middleware('verified')->name("Home#dashboard");
 
     // myPost
     Route::get("myposts", [PostController::class, "myPosts"])->name("posts.myPosts");
 
     // user posts
     Route::get("{user}/posts", [PostController::class, "userPosts"])->name("user.posts");
-});
+
+    // Email Verification -- middleware("verified)
+    Route::get('/email/verify', [AuthController::class, "verificationNotice"])->name('verification.notice');
+    Route::get('/email/verify/{id}/{hash}',[AuthController::class, "verificationHandeler"] )->middleware( 'signed')->name('verification.verify');
+    Route::post('/email/verification-notification', [AuthController::class, "verificationEmail"])->middleware( 'throttle:6,1')->name('verification.send');
+}); 
 
    // use resource route
    Route::resource("posts", PostController::class);
