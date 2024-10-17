@@ -19,7 +19,7 @@ class PostDeletedMail extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct(public Post $post , public User $user)
+    public function __construct(public $post , public $user)
     {
         //
     }

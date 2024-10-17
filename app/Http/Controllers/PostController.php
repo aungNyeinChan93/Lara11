@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PostCreateEvent;
+use App\Events\PostDeleteEvent;
+use App\Events\PostUpdateEvent;
 use App\Mail\PostUpdatedMail;
 use App\Mail\welcomeMail;
 use App\Models\Post;
@@ -66,8 +69,10 @@ class PostController extends Controller implements HasMiddleware
             "body" => $request->body,
             "image" => $path,
         ]);
+        $user = Auth::user();
 
-        Mail::to(Auth::user()->email)->send(new PostCreatedMail($post,$post->user));
+        event(new PostCreateEvent($post,$post->user));
+        // Mail::to(Auth::user()->email)->send(new PostCreatedMail($post,$post->user));
 
         return to_route("posts.index")->with("post-create", "Post created success!");
     }
@@ -118,7 +123,10 @@ class PostController extends Controller implements HasMiddleware
                     "image" => $post->image,
                 ]);
             }
-            Mail::to(Auth::user()->email)->send(new PostUpdatedMail($post,$post->user));
+
+            event(new PostUpdateEvent($post,$post->user));
+            // Mail::to(Auth::user()->email)->send(new PostUpdatedMail($post,$post->user));
+
             return to_route("posts.index")->with("post-update", "Posts updated success!");
         } catch (\Throwable $th) {
             return $th->getMessage();
@@ -142,7 +150,8 @@ class PostController extends Controller implements HasMiddleware
 
         $post->delete();
 
-        Mail::to(Auth::user()->email)->send(new PostDeletedMail($post,$post->user));
+        event(new PostDeleteEvent($post,$post->user));
+
         return to_route("posts.index")->with("post-delete", "Post delete success!");
     }
 

@@ -8,11 +8,16 @@
                          <div class="card-header">
                              <h3>{{ $post->title }}</h3>
                          </div>
-                         <div class="card-body">
-                             <p>
-                                 {{ $post->body }}
-                             </p>
-                         </div>
+                        <div class="  flex justify-between p-3 my-2">
+                            <div class="card-body">
+                                <p>
+                                    {{ $post->body }}
+                                </p>
+                            </div>
+                            <div>
+                               <img src="{{ asset("storage/".$post->image) }}" alt="" class="w-25 mx-auto img-fluid rounded-lg">
+                            </div>
+                        </div>
                        </div>
                 @endforeach
                 <a href="{{ route("posts.index") }}" class="text-blue-400 text-md p-3 my-2">Back</a>

@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Events\userScribeEvent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Auth\Events\Registered;
+use App\Listeners\CreateSubscribeListener;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 class AuthController extends Controller
@@ -30,6 +32,12 @@ class AuthController extends Controller
         Auth::login($user);
 
         event(new Registered($user));
+
+        if($request->check){
+            // dd("done");
+            event(new userScribeEvent($user));
+
+        }
 
         return to_route("Home#dashboard");
 

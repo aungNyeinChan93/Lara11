@@ -28,6 +28,10 @@
                     <div class="alert text-red-500 text-xs">{{ $message }}</div>
                     @enderror
                 </div>
+                <div class="my-3">
+                    <input type="checkbox" name="check" id="check" class="input">
+                    <label for="check"> Check for subscribe</label>
+                </div>
                 <div class="my-4">
                     <input type="submit" value="submit" class="px-3 py-2 my-3 bg-green-500 rounded-lg">
                 </div>
