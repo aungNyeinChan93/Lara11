@@ -15,6 +15,9 @@
                 @enderror
             </div>
             <div class="my-3">
+                <a class=" text-red-400  text-xs" href="{{ route("password.request") }}">reset password</a>
+            </div>
+            <div class="my-3">
                 <input type="submit" value="Submit" class="input p-2 bg-green-400 my-2">
             </div>
         </form>

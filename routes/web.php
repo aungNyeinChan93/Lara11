@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\SocialLoginController;
 
 Route::get('/', function () {
@@ -31,13 +32,7 @@ Route::post("testForm", function (Request $request) {
 })->name("test");
 
 
-Route::middleware("guest")->group(function () {
-    // auth
-    Route::get("registerPage", [AuthController::class, "registerPage"])->name("Auth#registerPage");
-    Route::post("register", [AuthController::class, "register"])->name("Auth#register");
-    Route::get("login", [AuthController::class, "loginPage"])->name("Auth#loginPage");
-    Route::post("login", [AuthController::class, "login"])->name("Auth#login");
-});
+
 
 Route::group(["middleware" => "auth"], function () {
 
@@ -56,11 +51,24 @@ Route::group(["middleware" => "auth"], function () {
     Route::get('/email/verify', [AuthController::class, "verificationNotice"])->name('verification.notice');
     Route::get('/email/verify/{id}/{hash}',[AuthController::class, "verificationHandeler"] )->middleware( 'signed')->name('verification.verify');
     Route::post('/email/verification-notification', [AuthController::class, "verificationEmail"])->middleware( 'throttle:6,1')->name('verification.send');
-}); 
+});
 
-   // use resource route
+   // Post resource route
    Route::resource("posts", PostController::class);
 
+   Route::middleware("guest")->group(function () {
 
+    // auth
+    Route::get("registerPage", [AuthController::class, "registerPage"])->name("Auth#registerPage");
+    Route::post("register", [AuthController::class, "register"])->name("Auth#register");
+    Route::get("login", [AuthController::class, "loginPage"])->name("Auth#loginPage");
+    Route::post("login", [AuthController::class, "login"])->name("Auth#login");
+
+    // reset password routes
+    Route::get('/forgot-password', [ResetPasswordController::class,"passwordRequest"])->name('password.request');
+    Route::post('/forgot-password', [ResetPasswordController::class, "passwordEmail"])->name('password.email');
+    Route::get('/reset-password/{token}', [ResetPasswordController::class, "passwordReset"])->name('password.reset');
+    Route::post('/reset-password', [ResetPasswordController::class,"passwordUpdate"])->middleware('guest')->name('password.update');
+});
 
 
